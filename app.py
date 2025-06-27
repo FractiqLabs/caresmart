@@ -29,11 +29,15 @@ def upload_file():
         
         return jsonify({
             'success': True, 
-            'message': f'ファイルをアップロードしました: {filename}',
+            'message': f'✅ ファイルをアップロードしました: {filename}',
             'filename': filename
         })
     
-    return jsonify({'error': 'PDFファイルのみ対応しています'})
+    return jsonify({'error': '❌ PDFファイルのみ対応しています'})
+
+@app.route('/test')
+def test():
+    return "🎉 Flask アプリケーションが正常に動作しています！"
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
