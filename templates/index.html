@@ -3,325 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>訪問調査票自動転記システム</title>
+    <title>テスト版</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        header {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        header h1 {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-
-        main {
-            padding: 40px;
-        }
-
-        .upload-area {
-            border: 3px dashed #3498db;
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            background: #f8f9fa;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .upload-area:hover {
-            background: #e9ecef;
-            border-color: #2980b9;
-        }
-
-        .upload-area.dragover {
-            background: #d4edda;
-            border-color: #27ae60;
-        }
-
-        .upload-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-        }
-
-        .progress {
-            margin-top: 20px;
-            background: #ecf0f1;
-            border-radius: 10px;
-            overflow: hidden;
-            height: 10px;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #3498db, #27ae60);
-            width: 0%;
-            transition: width 0.3s ease;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-
-        .result {
-            margin-top: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            white-space: pre-wrap;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .result.success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-        }
-
-        .result.error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-        }
-
-        .result.info {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            color: #0c5460;
-        }
-
-        .button {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1em;
-            margin: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
-        }
-
-        .debug-info {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            font-size: 12px;
-            color: #666;
-        }
-
-        #file-input {
-            display: none;
-        }
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .upload-area { border: 2px solid #ccc; padding: 20px; text-align: center; margin: 20px 0; }
+        .result { background: #f0f0f0; padding: 15px; margin: 20px 0; white-space: pre-wrap; }
+        button { padding: 10px 20px; margin: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>📋 訪問調査票自動転記システム</h1>
-            <p>特養相談員業務の効率化ツール - OCR機能付き</p>
-        </header>
+        <h1>🧪 基本動作テスト</h1>
         
-        <main>
-            <div class="upload-section">
-                <div id="upload-area" class="upload-area">
-                    <div class="upload-icon">📄</div>
-                    <h3>PDFファイルをドロップ または クリックして選択</h3>
-                    <p>対応形式: PDF (最大16MB)</p>
-                    <input type="file" id="file-input" accept=".pdf">
-                </div>
-                
-                <div id="progress" class="progress" style="display: none;">
-                    <div class="progress-bar"></div>
-                </div>
-                
-                <div id="result" class="result" style="display: none;"></div>
-                
-                <div class="debug-info">
-                    <strong>🔧 デバッグ情報:</strong>
-                    <div id="debug-log">ページ読み込み完了</div>
-                </div>
-            </div>
-        </main>
+        <div class="upload-area">
+            <h3>PDFファイルを選択</h3>
+            <input type="file" id="fileInput" accept=".pdf">
+            <br><br>
+            <button onclick="testUpload()">アップロードテスト</button>
+            <button onclick="testJS()">JavaScript テスト</button>
+        </div>
+        
+        <div id="result" class="result">
+            ページ読み込み完了
+        </div>
     </div>
-    
+
     <script>
-        // デバッグログ機能
-        function addDebugLog(message) {
-            const debugLog = document.getElementById('debug-log');
-            const timestamp = new Date().toLocaleTimeString();
-            debugLog.innerHTML += `<br>[${timestamp}] ${message}`;
-            console.log(`[${timestamp}] ${message}`);
+        // 基本的なJavaScriptテスト
+        function testJS() {
+            document.getElementById('result').textContent = '✅ JavaScript は正常に動作しています！\n現在時刻: ' + new Date().toLocaleString();
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            addDebugLog('DOM読み込み完了');
-            
-            const uploadArea = document.getElementById('upload-area');
-            const fileInput = document.getElementById('file-input');
-            const progress = document.getElementById('progress');
+        // シンプルなアップロードテスト
+        function testUpload() {
+            const fileInput = document.getElementById('fileInput');
             const result = document.getElementById('result');
-
-            addDebugLog('要素の取得完了');
-
-            // クリックでファイル選択
-            uploadArea.addEventListener('click', () => {
-                addDebugLog('アップロードエリアをクリック');
-                fileInput.click();
-            });
-
-            // ファイル選択時の処理
-            fileInput.addEventListener('change', handleFile);
-
-            // ドラッグ&ドロップ処理
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-                addDebugLog('ファイルをドラッグ中');
-            });
-
-            uploadArea.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-            });
-
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                addDebugLog('ファイルをドロップ');
-                
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    handleFile({ target: { files: files } });
-                }
-            });
-
-            function handleFile(event) {
-                const file = event.target.files[0];
-                if (!file) {
-                    addDebugLog('ファイルが選択されていません');
-                    return;
-                }
-
-                addDebugLog(`ファイル選択: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
-
-                if (file.type !== 'application/pdf') {
-                    addDebugLog('PDFファイルではありません');
-                    showResult('PDFファイルを選択してください', 'error');
-                    return;
-                }
-
-                if (file.size > 16 * 1024 * 1024) {
-                    addDebugLog('ファイルサイズが大きすぎます');
-                    showResult('ファイルサイズは16MB以下にしてください', 'error');
-                    return;
-                }
-
-                uploadFile(file);
+            
+            if (fileInput.files.length === 0) {
+                result.textContent = '❌ ファイルを選択してください';
+                return;
             }
+            
+            const file = fileInput.files[0];
+            result.textContent = `📄 ファイル情報:\n名前: ${file.name}\nサイズ: ${file.size} bytes\nタイプ: ${file.type}\n\n次にサーバーに送信します...`;
+            
+            // 実際のアップロード
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                result.textContent += `\n✅ サーバーレスポンス: ${response.status}`;
+                return response.json();
+            })
+            .then(data => {
+                result.textContent += '\n✅ データ受信完了:\n' + JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                result.textContent += '\n❌ エラー: ' + error.message;
+            });
+        }
 
-            function uploadFile(file) {
-                addDebugLog('アップロード処理開始');
-                
-                const formData = new FormData();
-                formData.append('file', file);
-
-                progress.style.display = 'block';
-                const progressBar = progress.querySelector('.progress-bar');
-                progressBar.style.width = '30%';
-
-                addDebugLog('サーバーにリクエスト送信');
-
-                fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => {
-                    addDebugLog(`サーバーレスポンス: ${response.status}`);
-                    progressBar.style.width = '60%';
-                    return response.json();
-                })
-                .then(data => {
-                    addDebugLog('データ受信完了');
-                    progressBar.style.width = '100%';
-                    
-                    console.log('受信データ:', data);
-                    
-                    if (data.success) {
-                        let message = data.message;
-                        
-                        // OCR結果があれば表示
-                        if (data.ocr_result) {
-                            message += '\n\n=== OCR処理結果 ===\n' + data.ocr_result;
-                            addDebugLog('OCR結果を表示');
-                        } else {
-                            addDebugLog('OCR結果がありません');
-                        }
-                        
-                        showResult(message, 'success');
-                    } else {
-                        addDebugLog(`エラー: ${data.error}`);
-                        showResult(data.error, 'error');
-                    }
-                })
-                .catch(error => {
-                    addDebugLog(`通信エラー: ${error.message}`);
-                    console.error('エラー詳細:', error);
-                    showResult('アップロードエラーが発生しました: ' + error.message, 'error');
-                })
-                .finally(() => {
-                    setTimeout(() => {
-                        progress.style.display = 'none';
-                        addDebugLog('処理完了');
-                    }, 500);
-                });
-            }
-
-            function showResult(message, type) {
-                result.textContent = message;
-                result.className = `result ${type}`;
-                result.style.display = 'block';
-                
-                // 結果表示領域にスクロール
-                result.scrollIntoView({ behavior: 'smooth' });
-            }
-
-            addDebugLog('イベントリスナー設定完了');
+        // ページ読み込み時のテスト
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('result').textContent += '\n✅ DOM読み込み完了';
         });
     </script>
 </body>
