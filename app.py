@@ -27,13 +27,53 @@ def upload_file():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
-        return jsonify({
-            'success': True, 
-            'message': f'✅ ファイルをアップロードしました: {filename}',
-            'filename': filename
-        })
+        # OCR処理を実行
+        try:
+            ocr_result = process_pdf_ocr(filepath)
+            return jsonify({
+                'success': True, 
+                'message': f'✅ ファイルをアップロードしました: {filename}',
+                'filename': filename,
+                'ocr_result': ocr_result
+            })
+        except Exception as e:
+            return jsonify({
+                'success': True, 
+                'message': f'✅ ファイルをアップロードしました: {filename}',
+                'filename': filename,
+                'ocr_result': f'OCR処理でエラーが発生しました: {str(e)}'
+            })
     
     return jsonify({'error': '❌ PDFファイルのみ対応しています'})
+
+def process_pdf_ocr(filepath):
+    """PDFからテキストを抽出する基本OCR機能"""
+    try:
+        # まずは基本的なOCRライブラリの動作確認
+        import pytesseract
+        from pdf2image import convert_from_path
+        from PIL import Image
+        
+        # PDF→画像変換
+        images = convert_from_path(filepath)
+        
+        extracted_text = ""
+        for i, image in enumerate(images):
+            # OCRでテキスト抽出
+            text = pytesseract.image_to_string(image, lang='jpn')
+            extracted_text += f"=== ページ {i+1} ===\n{text}\n\n"
+        
+        # 結果をファイルに保存（デバッグ用）
+        result_file = filepath.replace('.pdf', '_ocr_result.txt')
+        with open(result_file, 'w', encoding='utf-8') as f:
+            f.write(extracted_text)
+        
+        return f"✅ OCR処理完了！{len(images)}ページを処理しました。\n\n認識されたテキスト（最初の500文字）:\n{extracted_text[:500]}..."
+        
+    except ImportError as e:
+        return f"❌ 必要なライブラリがインストールされていません: {str(e)}"
+    except Exception as e:
+        return f"❌ OCR処理中にエラーが発生しました: {str(e)}"
 
 @app.route('/test')
 def test():
