@@ -47,33 +47,65 @@ def upload_file():
     return jsonify({'error': '❌ PDFファイルのみ対応しています'})
 
 def process_pdf_ocr(filepath):
-    """PDFからテキストを抽出する基本OCR機能"""
+    """PDFからテキストを抽出する基本OCR機能（デバッグ版）"""
+    debug_info = []
+    
     try:
-        # まずは基本的なOCRライブラリの動作確認
+        debug_info.append("Step 1: ライブラリのインポート開始")
+        
         import pytesseract
+        debug_info.append("✅ pytesseract インポート成功")
+        
         from pdf2image import convert_from_path
+        debug_info.append("✅ pdf2image インポート成功")
+        
         from PIL import Image
+        debug_info.append("✅ PIL インポート成功")
+        
+        debug_info.append(f"Step 2: PDF変換開始 - ファイル: {filepath}")
         
         # PDF→画像変換
         images = convert_from_path(filepath)
+        debug_info.append(f"✅ PDF変換完了 - {len(images)}ページ")
+        
+        if len(images) == 0:
+            return "❌ PDFから画像を取得できませんでした"
+        
+        debug_info.append("Step 3: OCR処理開始")
         
         extracted_text = ""
         for i, image in enumerate(images):
-            # OCRでテキスト抽出
-            text = pytesseract.image_to_string(image, lang='jpn')
+            debug_info.append(f"ページ {i+1} を処理中...")
+            
+            # まずは英語でテスト（日本語でエラーが出る場合）
+            try:
+                text = pytesseract.image_to_string(image, lang='jpn')
+                debug_info.append(f"✅ ページ {i+1} 日本語OCR成功")
+            except:
+                text = pytesseract.image_to_string(image, lang='eng')
+                debug_info.append(f"⚠️ ページ {i+1} 英語OCRで代用")
+            
             extracted_text += f"=== ページ {i+1} ===\n{text}\n\n"
+            
+            # 最初のページで処理を停止（テスト用）
+            if i == 0:
+                break
+        
+        debug_info.append("Step 4: 結果保存")
         
         # 結果をファイルに保存（デバッグ用）
         result_file = filepath.replace('.pdf', '_ocr_result.txt')
         with open(result_file, 'w', encoding='utf-8') as f:
             f.write(extracted_text)
         
-        return f"✅ OCR処理完了！{len(images)}ページを処理しました。\n\n認識されたテキスト（最初の500文字）:\n{extracted_text[:500]}..."
+        debug_info.append(f"✅ 結果ファイル保存: {result_file}")
+        
+        return f"✅ OCR処理完了！\n\nデバッグ情報:\n" + "\n".join(debug_info) + f"\n\n認識されたテキスト（最初の200文字）:\n{extracted_text[:200]}..."
         
     except ImportError as e:
-        return f"❌ 必要なライブラリがインストールされていません: {str(e)}"
+        return f"❌ ライブラリエラー: {str(e)}\n\nデバッグ情報:\n" + "\n".join(debug_info)
     except Exception as e:
-        return f"❌ OCR処理中にエラーが発生しました: {str(e)}"
+        return f"❌ OCR処理エラー: {str(e)}\n\nデバッグ情報:\n" + "\n".join(debug_info)
 
 @app.route('/test')
 def test():
