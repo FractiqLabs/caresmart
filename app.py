@@ -15,11 +15,15 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    print("=== アップロード処理開始 ===")  # サーバーログ用
+    
     if 'file' not in request.files:
+        print("エラー: ファイルが見つかりません")
         return jsonify({'error': 'ファイルが選択されていません'})
     
     file = request.files['file']
     if file.filename == '':
+        print("エラー: ファイル名が空です")
         return jsonify({'error': 'ファイルが選択されていません'})
     
     if file and file.filename.lower().endswith('.pdf'):
@@ -27,9 +31,15 @@ def upload_file():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
+        print(f"ファイル保存完了: {filepath}")
+        
         # OCR処理を実行
+        print("OCR処理開始...")
         try:
             ocr_result = process_pdf_ocr(filepath)
+            print("OCR処理完了")
+            print(f"OCR結果: {ocr_result[:100]}...")  # 最初の100文字だけログ出力
+            
             return jsonify({
                 'success': True, 
                 'message': f'✅ ファイルをアップロードしました: {filename}',
@@ -37,6 +47,7 @@ def upload_file():
                 'ocr_result': ocr_result
             })
         except Exception as e:
+            print(f"OCR処理でエラー: {str(e)}")
             return jsonify({
                 'success': True, 
                 'message': f'✅ ファイルをアップロードしました: {filename}',
@@ -44,6 +55,7 @@ def upload_file():
                 'ocr_result': f'OCR処理でエラーが発生しました: {str(e)}'
             })
     
+    print("エラー: PDFファイルではありません")
     return jsonify({'error': '❌ PDFファイルのみ対応しています'})
 
 def process_pdf_ocr(filepath):
